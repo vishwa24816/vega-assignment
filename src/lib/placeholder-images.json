@@ -1,3 +1,77 @@
+
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-1",
+      "description": "Avatar for Sarah Lee",
+      "imageUrl": "https://picsum.photos/seed/user1/200/200",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "user-avatar-2",
+      "description": "Avatar for Mike Johnson",
+      "imageUrl": "https://picsum.photos/seed/user2/200/200",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "user-avatar-3",
+      "description": "Avatar for Emily Chen",
+      "imageUrl": "https://picsum.photos/seed/user3/200/200",
+      "imageHint": "person smiling"
+    },
+    {
+      "id": "user-avatar-4",
+      "description": "Avatar for David Rodriguez",
+      "imageUrl": "https://picsum.photos/seed/user4/200/200",
+      "imageHint": "man glasses"
+    },
+    {
+      "id": "user-avatar-5",
+      "description": "Avatar for Alex Kim",
+      "imageUrl": "https://picsum.photos/seed/user5/200/200",
+      "imageHint": "person outdoors"
+    },
+    {
+      "id": "user-avatar-current",
+      "description": "Avatar for the current user",
+      "imageUrl": "https://picsum.photos/seed/user6/200/200",
+      "imageHint": "person selfie"
+    },
+    {
+      "id": "post-image-1",
+      "description": "A beautiful mountain landscape",
+      "imageUrl": "https://picsum.photos/seed/post1/600/400",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "post-image-2",
+      "description": "A delicious looking meal",
+      "imageUrl": "https://picsum.photos/seed/post2/600/400",
+      "imageHint": "food plate"
+    },
+    {
+      "id": "post-image-3",
+      "description": "A person working on a laptop",
+      "imageUrl": "https://picsum.photos/seed/post3/600/400",
+      "imageHint": "laptop desk"
+    },
+    {
+      "id": "post-image-4",
+      "description": "City skyline at night",
+      "imageUrl": "https://picsum.photos/seed/post4/600/400",
+      "imageHint": "city night"
+    },
+    {
+      "id": "profile-banner-1",
+      "description": "Abstract banner for Sarah Lee's profile",
+      "imageUrl": "https://picsum.photos/seed/banner1/1200/400",
+      "imageHint": "abstract pattern"
+    },
+    {
+      "id": "profile-banner-current",
+      "description": "Abstract banner for current user's profile",
+      "imageUrl": "https://picsum.photos/seed/bannercurrent/1200/400",
+      "imageHint": "abstract texture"
+    }
+  ]
 }
