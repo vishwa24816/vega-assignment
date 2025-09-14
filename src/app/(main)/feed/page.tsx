@@ -1,4 +1,5 @@
-import { getFeedPosts, currentUser } from "@/lib/data";
+
+import { getFeedPosts, currentUser, getLikes, getComments } from "@/lib/data";
 import { CreatePostForm } from "@/components/create-post-form";
 import { PostCard } from "@/components/post-card";
 import {
@@ -6,25 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { scoreFeed } from "@/ai/flows/score-feed-flow";
 import type { Post } from "@/lib/definitions";
 
 async function getScoredFeedPosts(): Promise<Post[]> {
   const initialPosts = getFeedPosts(currentUser.id);
-  if (initialPosts.length === 0) {
-    return [];
-  }
 
-  const result = await scoreFeed({ user: currentUser, posts: initialPosts });
-
-  const scoredPostsMap = new Map(
-    result.scoredPosts.map((p) => [p.postId, p.score])
-  );
-
-  // Sort initialPosts based on the scores from the AI
+  // Non-AI scoring mimic: Sort by engagement (likes + comments)
+  // We'll give comments more weight than likes.
   const sortedPosts = [...initialPosts].sort((a, b) => {
-    const scoreA = scoredPostsMap.get(a.id) ?? 0;
-    const scoreB = scoredPostsMap.get(b.id) ?? 0;
+    const scoreA = getLikes(a.id) + getComments(a.id).length * 2;
+    const scoreB = getLikes(b.id) + getComments(b.id).length * 2;
+    
+    // If scores are equal, sort by creation date
+    if (scoreB === scoreA) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    
     return scoreB - scoreA;
   });
 
