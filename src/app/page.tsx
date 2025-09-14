@@ -35,11 +35,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="container mx-auto flex items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Social Connect. All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 }
