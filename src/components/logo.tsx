@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Mountain } from "lucide-react";
 
-export function Logo() {
+export function Logo({ href = "/feed" }: { href?: string }) {
   return (
     <Link
-      href="/feed"
+      href={href}
       className="flex items-center gap-2 text-primary transition-colors hover:text-foreground"
     >
       <Mountain className="h-6 w-6" />
