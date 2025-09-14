@@ -4,7 +4,7 @@ import { subHours, subMinutes, subDays } from "date-fns";
 
 export const currentUser: User = {
   id: "user-current",
-  name: "You",
+  name: "Vishwa Lingam",
   username: "you",
   avatarUrl: "https://picsum.photos/seed/user6/200/200",
   bio: "Just trying to connect with the world. Lover of coffee, code, and cats.",

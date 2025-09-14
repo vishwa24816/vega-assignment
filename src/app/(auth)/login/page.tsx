@@ -33,7 +33,7 @@ export default function LoginPage() {
     await new Promise(resolve => setTimeout(resolve, 500));
     if (login) {
       login({
-        displayName: 'You',
+        displayName: 'Vishwa Lingam',
         email: 'user@example.com',
         photoURL: 'https://picsum.photos/seed/user6/200/200'
       });
