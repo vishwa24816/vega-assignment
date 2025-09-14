@@ -36,11 +36,6 @@ export default async function FeedPage() {
   return (
     <div className="flex flex-col gap-8">
       <CreatePostForm user={currentUser} />
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Your Feed</CardTitle>
-        </CardHeader>
-      </Card>
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}

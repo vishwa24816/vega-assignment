@@ -1,11 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useTransition } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Image as ImageIcon, Send } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Send } from 'lucide-react';
 import type { User } from '@/lib/definitions';
 import { createPost } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -14,22 +14,23 @@ export function CreatePostForm({ user }: { user: User }) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
-  const handleCreatePost = async (formData: FormData) => {
-    // In a real app, you would handle the file upload here.
-    // For now, the file input is part of the form, but we're not processing it.
-    const result = await createPost(user.id, formData);
-    if (result.success) {
-      formRef.current?.reset();
-    } else {
-       toast({
-        title: "Error",
-        description: result.message || "Could not create post.",
-        variant: "destructive",
-      });
-    }
+  const handleCreatePost = (formData: FormData) => {
+    startTransition(async () => {
+      const result = await createPost(user.id, formData);
+      if (result.success) {
+        formRef.current?.reset();
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message || 'Could not create post.',
+          variant: 'destructive',
+        });
+      }
+    });
   };
-  
+
   const handleImageButtonClick = () => {
     fileInputRef.current?.click();
   };
@@ -52,16 +53,36 @@ export function CreatePostForm({ user }: { user: User }) {
               placeholder="What's on your mind?"
               className="mb-2 min-h-[60px] border-0 bg-transparent px-0 focus-visible:ring-0"
               required
+              disabled={isPending}
             />
-            <input type="file" name="image" ref={fileInputRef} className="hidden" accept="image/*" />
+            <input
+              type="file"
+              name="image"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              disabled={isPending}
+            />
             <div className="flex items-center justify-between">
               <div className="flex gap-2 text-muted-foreground">
-                <Button variant="ghost" size="icon" type="button" onClick={handleImageButtonClick}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  onClick={handleImageButtonClick}
+                  disabled={isPending}
+                >
                   <ImageIcon className="h-5 w-5" />
                 </Button>
               </div>
-              <Button size="sm" type="submit">
-                Post <Send className="ml-2 h-4 w-4" />
+              <Button size="sm" type="submit" disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <>
+                    Post <Send className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
