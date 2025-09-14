@@ -21,8 +21,51 @@ export async function createPost(userId: string, formData: FormData) {
   posts.unshift(newPost); // Add to the beginning of the array
 
   console.log(`User ${userId} created post: "${content}"`);
+  
+  // Simulate Priya Sharma liking and commenting
+  const priyaUser = users.find(u => u.username === 'priyasharma');
+  if (priyaUser) {
+    // Simulate like
+    likes.push({ postId: newPost.id, userId: priyaUser.id });
+    
+    // Simulate like notification
+    notifications.unshift({
+      id: `notif-like-${Date.now()}`,
+      type: 'like' as const,
+      userId: priyaUser.id,
+      postId: newPost.id,
+      createdAt: new Date().toISOString(),
+      read: false,
+    });
+
+    // Simulate comment
+    comments.push({
+      id: `comment-${Date.now()}`,
+      postId: newPost.id,
+      userId: priyaUser.id,
+      content: "Great post!",
+      createdAt: new Date().toISOString(),
+    });
+
+    // Simulate comment notification
+    notifications.unshift({
+      id: `notif-comment-${Date.now()}`,
+      type: 'comment' as const,
+      userId: priyaUser.id,
+      postId: newPost.id,
+      createdAt: new Date().toISOString(),
+      read: false,
+    });
+    
+    console.log(`Simulated like and comment from Priya Sharma on post ${newPost.id}`);
+  }
+
+
   revalidatePath('/feed');
   revalidatePath(`/profile/${users.find((u) => u.id === userId)?.username}`);
+  revalidatePath('/notifications');
+  revalidatePath(`/post/${newPost.id}`);
+
   return { success: true, post: newPost };
 }
 
