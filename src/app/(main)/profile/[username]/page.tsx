@@ -1,4 +1,6 @@
-import Image from "next/image";
+'use client';
+
+import Image from 'next/image';
 import {
   users,
   posts,
@@ -6,23 +8,80 @@ import {
   isFollowing,
   getFollowers,
   getFollows,
-} from "@/lib/data";
-import { PostCard } from "@/components/post-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { notFound } from "next/navigation";
+} from '@/lib/data';
+import { PostCard } from '@/components/post-card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { notFound } from 'next/navigation';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from "next/link";
-import { User } from "@/lib/definitions";
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
+import { User } from '@/lib/definitions';
+import { useTransition } from 'react';
+import { toggleFollow } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
-function UserList({ users, emptyMessage }: { users: User[], emptyMessage: string }) {
+function FollowButton({
+  isCurrentUserProfile,
+  isFollowing,
+  targetUserId,
+}: {
+  isCurrentUserProfile: boolean;
+  isFollowing: boolean;
+  targetUserId: string;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+
+  const handleFollow = () => {
+    startTransition(async () => {
+      const result = await toggleFollow(
+        currentUser.id,
+        targetUserId,
+        isFollowing
+      );
+      if (!result.success) {
+        toast({
+          title: 'Error',
+          description: 'Could not update follow status.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  if (isCurrentUserProfile) {
+    return (
+      <Button variant="outline" asChild>
+        <Link href="/settings">Edit Profile</Link>
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant={isFollowing ? 'outline' : 'default'}
+      onClick={handleFollow}
+      disabled={isPending}
+    >
+      {isFollowing ? 'Following' : 'Follow'}
+    </Button>
+  );
+}
+
+function UserList({
+  users,
+  emptyMessage,
+}: {
+  users: User[];
+  emptyMessage: string;
+}) {
   return (
     <div className="flex flex-col gap-4">
       {users.length > 0 ? (
@@ -40,13 +99,17 @@ function UserList({ users, emptyMessage }: { users: User[], emptyMessage: string
                 >
                   {user.name}
                 </Link>
-                <p className="text-sm text-muted-foreground">@{user.username}</p>
+                <p className="text-sm text-muted-foreground">
+                  @{user.username}
+                </p>
               </div>
             </div>
             {currentUser.id !== user.id && (
-              <Button size="sm" variant={isFollowing(currentUser.id, user.id) ? "outline" : "default"}>
-                {isFollowing(currentUser.id, user.id) ? "Following" : "Follow"}
-              </Button>
+              <FollowButton
+                isCurrentUserProfile={false}
+                isFollowing={isFollowing(currentUser.id, user.id)}
+                targetUserId={user.id}
+              />
             )}
           </div>
         ))
@@ -56,7 +119,6 @@ function UserList({ users, emptyMessage }: { users: User[], emptyMessage: string
     </div>
   );
 }
-
 
 export default function ProfilePage({
   params,
@@ -70,10 +132,15 @@ export default function ProfilePage({
 
   const userPosts = posts.filter((p) => p.userId === user.id);
   const isCurrentUserProfile = user.id === currentUser.id;
-  const following = isFollowing(currentUser.id, user.id);
-  const followers = getFollowers(user.id).map(f => f.followerId).map(id => users.find(u => u.id === id)).filter(Boolean) as User[];
-  const followingList = getFollows(user.id).map(f => f.followingId).map(id => users.find(u => u.id === id)).filter(Boolean) as User[];
-
+  const followingStatus = isFollowing(currentUser.id, user.id);
+  const followers = getFollowers(user.id)
+    .map((f) => f.followerId)
+    .map((id) => users.find((u) => u.id === id))
+    .filter(Boolean) as User[];
+  const followingList = getFollows(user.id)
+    .map((f) => f.followingId)
+    .map((id) => users.find((u) => u.id === id))
+    .filter(Boolean) as User[];
 
   return (
     <div className="flex flex-col gap-8">
@@ -103,24 +170,26 @@ export default function ProfilePage({
               </CardTitle>
               <CardDescription>@{user.username}</CardDescription>
             </div>
-            {isCurrentUserProfile ? (
-              <Button variant="outline" asChild>
-                <Link href="/settings">Edit Profile</Link>
-              </Button>
-            ) : (
-              <Button variant={following ? "outline" : "default"}>
-                {following ? "Following" : "Follow"}
-              </Button>
-            )}
+            <FollowButton
+              isCurrentUserProfile={isCurrentUserProfile}
+              isFollowing={followingStatus}
+              targetUserId={user.id}
+            />
           </div>
           <p className="pt-4 text-sm text-foreground">{user.bio}</p>
           <div className="flex gap-4 pt-2 text-sm text-muted-foreground">
-            <Link href={`/profile/${user.username}/following`} className="hover:underline">
-              <span className="font-bold text-foreground">{followingList.length}</span> Following
-            </Link>
-             <Link href={`/profile/${user.username}/followers`} className="hover:underline">
-              <span className="font-bold text-foreground">{followers.length}</span> Followers
-            </Link>
+            <span className="hover:underline">
+              <span className="font-bold text-foreground">
+                {followingList.length}
+              </span>{' '}
+              Following
+            </span>
+            <span className="hover:underline">
+              <span className="font-bold text-foreground">
+                {followers.length}
+              </span>{' '}
+              Followers
+            </span>
           </div>
         </CardHeader>
       </Card>
@@ -145,14 +214,20 @@ export default function ProfilePage({
         <TabsContent value="followers">
           <Card>
             <CardContent className="p-6">
-              <UserList users={followers} emptyMessage={`@${user.username} doesn't have any followers yet.`} />
+              <UserList
+                users={followers}
+                emptyMessage={`@${user.username} doesn't have any followers yet.`}
+              />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="following">
           <Card>
             <CardContent className="p-6">
-               <UserList users={followingList} emptyMessage={`@${user.username} isn't following anyone yet.`} />
+              <UserList
+                users={followingList}
+                emptyMessage={`@${user.username} isn't following anyone yet.`}
+              />
             </CardContent>
           </Card>
         </TabsContent>

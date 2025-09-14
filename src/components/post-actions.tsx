@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import { Heart, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { toggleLike } from "@/lib/actions";
-import { currentUser } from "@/lib/data";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useTransition } from 'react';
+import { Heart, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { toggleLike } from '@/lib/actions';
+import { currentUser } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 export function PostActions({
   postId,
@@ -21,14 +21,14 @@ export function PostActions({
 
   const handleLike = () => {
     startTransition(async () => {
-      setIsLiked(!isLiked);
-      const result = await toggleLike(postId, currentUser.id);
-      if (!result.success) {
-        setIsLiked(isLiked); // Revert on failure
+      const result = await toggleLike(postId, currentUser.id, isLiked);
+      if (result.success) {
+        setIsLiked(!isLiked);
+      } else {
         toast({
-          title: "Error",
-          description: "Could not update like status.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Could not update like status.',
+          variant: 'destructive',
         });
       }
     });
@@ -45,10 +45,8 @@ export function PostActions({
       >
         <Heart
           className={cn(
-            "h-5 w-5 transition-all",
-            isLiked
-              ? "fill-red-500 text-red-500"
-              : "text-muted-foreground"
+            'h-5 w-5 transition-all',
+            isLiked ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
           )}
         />
         <span>Like</span>
