@@ -63,9 +63,9 @@ export async function toggleFollow(
     follows.push({ followerId: currentUserId, followingId: targetUserId });
   }
 
+  // Revalidate all pages under /profile to ensure follower/following lists update
+  revalidatePath('/profile', 'page');
   revalidatePath('/feed');
-  revalidatePath(`/profile/${users.find((u) => u.id === targetUserId)?.username}`);
-  revalidatePath(`/profile/${users.find((u) => u.id === currentUserId)?.username}`);
   return { success: true };
 }
 
