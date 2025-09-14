@@ -81,12 +81,12 @@ function NotificationItem({ notification }: { notification: import("@/lib/defini
         case "like":
             icon = <Heart className="h-6 w-6 text-red-500" />;
             text = <p><span className="font-semibold">{user.name}</span> liked your post.</p>;
-            link = `/profile/${currentUser.username}`; // Link to the user's post in a real app
+            link = notification.postId ? `/post/${notification.postId}?comments=true` : '#';
             break;
         case "comment":
             icon = <MessageCircle className="h-6 w-6 text-primary" />;
             text = <p><span className="font-semibold">{user.name}</span> commented on your post.</p>;
-            link = `/profile/${currentUser.username}`; // Link to the user's post in a real app
+            link = notification.postId ? `/post/${notification.postId}?comments=true` : '#';
             break;
         case "follow":
             icon = <UserIcon className="h-6 w-6 text-accent" />;

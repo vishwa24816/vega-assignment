@@ -24,11 +24,17 @@ import { Separator } from './ui/separator';
 import { useState } from 'react';
 import { CommentSection } from './comment-section';
 
-export function PostCard({ post }: { post: Post }) {
+export function PostCard({
+  post,
+  initialShowComments = false,
+}: {
+  post: Post;
+  initialShowComments?: boolean;
+}) {
   const user = getUser(post.userId);
   if (!user) return null;
 
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(initialShowComments);
   const comments = getComments(post.id);
   const totalLikes = getLikes(post.id);
   const isLiked = hasLiked(post.id, currentUser.id);
