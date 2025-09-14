@@ -1,8 +1,10 @@
+
 'use server';
 
-import { posts, follows, likes, comments, users } from './data';
+import { posts, follows, likes, comments, users, notifications } from './data';
 import { revalidatePath } from 'next/cache';
 import type { Post } from './definitions';
+import { useToast } from '@/hooks/use-toast';
 
 // This is a mock implementation. In a real app, you would interact with a database.
 
@@ -20,7 +22,7 @@ export async function createPost(userId: string, formData: FormData) {
 
   console.log(`User ${userId} created post: "${content}"`);
   revalidatePath('/feed');
-  revalidatePath(`/profile/${users.find(u => u.id === userId)?.username}`);
+  revalidatePath(`/profile/${users.find((u) => u.id === userId)?.username}`);
   return { success: true };
 }
 
@@ -50,19 +52,21 @@ export async function toggleFollow(
   targetUserId: string,
   isFollowing: boolean
 ) {
-    if (isFollowing) {
-        const index = follows.findIndex(f => f.followerId === currentUserId && f.followingId === targetUserId);
-        if (index > -1) {
-            follows.splice(index, 1);
-        }
-    } else {
-        follows.push({ followerId: currentUserId, followingId: targetUserId });
+  if (isFollowing) {
+    const index = follows.findIndex(
+      (f) => f.followerId === currentUserId && f.followingId === targetUserId
+    );
+    if (index > -1) {
+      follows.splice(index, 1);
     }
-    
-    revalidatePath('/feed');
-    revalidatePath(`/profile/${users.find(u => u.id === targetUserId)?.username}`);
-    revalidatePath(`/profile/${users.find(u => u.id === currentUserId)?.username}`);
-    return { success: true };
+  } else {
+    follows.push({ followerId: currentUserId, followingId: targetUserId });
+  }
+
+  revalidatePath('/feed');
+  revalidatePath(`/profile/${users.find((u) => u.id === targetUserId)?.username}`);
+  revalidatePath(`/profile/${users.find((u) => u.id === currentUserId)?.username}`);
+  return { success: true };
 }
 
 export async function addComment(
@@ -81,26 +85,44 @@ export async function addComment(
     createdAt: new Date().toISOString(),
   };
   comments.push(newComment);
+  console.log(`User ${userId} commented on post ${postId}: "${content}"`);
+
+  // Simulate a notification
+  const davidUser = users.find(u => u.username === 'davidr');
+  if (davidUser) {
+    const newNotification = {
+      id: `notif-${Date.now()}`,
+      type: 'like' as const,
+      userId: davidUser.id,
+      postId: postId,
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+    notifications.unshift(newNotification);
+    console.log(`Simulated notification: David Rodriguez liked your post.`);
+    revalidatePath('/notifications');
+  }
+
 
   revalidatePath('/feed');
   revalidatePath('/profile/.*');
-  return { success: true };
+  return { success: true, message: 'Comment added!' };
 }
 
 export async function updateProfile(userId: string, formData: FormData) {
-    const name = formData.get('name') as string;
-    const username = formData.get('username') as string;
-    const bio = formData.get('bio') as string;
+  const name = formData.get('name') as string;
+  const username = formData.get('username') as string;
+  const bio = formData.get('bio') as string;
 
-    const user = users.find(u => u.id === userId);
-    if (user) {
-        user.name = name || user.name;
-        user.username = username || user.username;
-        user.bio = bio || user.bio;
-    }
+  const user = users.find((u) => u.id === userId);
+  if (user) {
+    user.name = name || user.name;
+    user.username = username || user.username;
+    user.bio = bio || user.bio;
+  }
 
-    console.log(`Updated profile for ${userId}:`, { name, username, bio });
-    revalidatePath(`/profile/${user?.username}`);
-    revalidatePath('/settings');
-    return { success: true, message: 'Profile updated successfully!' };
+  console.log(`Updated profile for ${userId}:`, { name, username, bio });
+  revalidatePath(`/profile/${user?.username}`);
+  revalidatePath('/settings');
+  return { success: true, message: 'Profile updated successfully!' };
 }

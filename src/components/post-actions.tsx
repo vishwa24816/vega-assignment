@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -11,9 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 export function PostActions({
   postId,
   initialLiked,
+  onCommentClick,
 }: {
   postId: string;
   initialLiked: boolean;
+  onCommentClick: () => void;
 }) {
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [isPending, startTransition] = useTransition();
@@ -51,7 +54,12 @@ export function PostActions({
         />
         <span>Like</span>
       </Button>
-      <Button variant="ghost" size="sm" className="flex-1 justify-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex-1 justify-center gap-2"
+        onClick={onCommentClick}
+      >
         <MessageCircle className="h-5 w-5 text-muted-foreground" />
         <span>Comment</span>
       </Button>

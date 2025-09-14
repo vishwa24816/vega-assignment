@@ -1,3 +1,4 @@
+
 import type { User, Post, Comment, Like, Follow, Notification } from "@/lib/definitions";
 import { subHours, subMinutes, subDays } from "date-fns";
 
@@ -189,6 +190,7 @@ export const notifications: Notification[] = [
 // Helper functions to get data
 export const getPost = (postId: string) => posts.find(p => p.id === postId);
 export const getUser = (userId: string) => users.find(u => u.id === userId);
+export const getUserByUsername = (username: string) => users.find(u => u.username === username);
 export const getComments = (postId: string) => comments.filter(c => c.postId === postId);
 export const getLikes = (postId: string) => likes.filter(l => l.postId === postId).length;
 export const hasLiked = (postId: string, userId: string) => !!likes.find(l => l.postId === postId && l.userId === userId);
