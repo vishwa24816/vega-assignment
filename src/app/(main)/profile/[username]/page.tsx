@@ -1,11 +1,62 @@
 import Image from "next/image";
-import Link from "next/link";
-import { users, posts, currentUser, isFollowing } from "@/lib/data";
+import {
+  users,
+  posts,
+  currentUser,
+  isFollowing,
+  getFollowers,
+  getFollows,
+} from "@/lib/data";
 import { PostCard } from "@/components/post-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
+import { User } from "@/lib/definitions";
+
+function UserList({ users, emptyMessage }: { users: User[], emptyMessage: string }) {
+  return (
+    <div className="flex flex-col gap-4">
+      {users.length > 0 ? (
+        users.map((user) => (
+          <div key={user.id} className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border">
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <Link
+                  href={`/profile/${user.username}`}
+                  className="font-semibold hover:underline"
+                >
+                  {user.name}
+                </Link>
+                <p className="text-sm text-muted-foreground">@{user.username}</p>
+              </div>
+            </div>
+            {currentUser.id !== user.id && (
+              <Button size="sm" variant={isFollowing(currentUser.id, user.id) ? "outline" : "default"}>
+                {isFollowing(currentUser.id, user.id) ? "Following" : "Follow"}
+              </Button>
+            )}
+          </div>
+        ))
+      ) : (
+        <p className="text-center text-muted-foreground">{emptyMessage}</p>
+      )}
+    </div>
+  );
+}
+
 
 export default function ProfilePage({
   params,
@@ -20,6 +71,9 @@ export default function ProfilePage({
   const userPosts = posts.filter((p) => p.userId === user.id);
   const isCurrentUserProfile = user.id === currentUser.id;
   const following = isFollowing(currentUser.id, user.id);
+  const followers = getFollowers(user.id).map(f => f.followerId).map(id => users.find(u => u.id === id)).filter(Boolean) as User[];
+  const followingList = getFollows(user.id).map(f => f.followingId).map(id => users.find(u => u.id === id)).filter(Boolean) as User[];
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -42,13 +96,17 @@ export default function ProfilePage({
           </div>
         </div>
         <CardHeader className="pt-16">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="font-headline text-2xl">{user.name}</CardTitle>
+              <CardTitle className="font-headline text-2xl">
+                {user.name}
+              </CardTitle>
               <CardDescription>@{user.username}</CardDescription>
             </div>
             {isCurrentUserProfile ? (
-              <Button variant="outline">Edit Profile</Button>
+              <Button variant="outline" asChild>
+                <Link href="/settings">Edit Profile</Link>
+              </Button>
             ) : (
               <Button variant={following ? "outline" : "default"}>
                 {following ? "Following" : "Follow"}
@@ -57,28 +115,48 @@ export default function ProfilePage({
           </div>
           <p className="pt-4 text-sm text-foreground">{user.bio}</p>
           <div className="flex gap-4 pt-2 text-sm text-muted-foreground">
-            <span>
-              <span className="font-bold text-foreground">123</span> Following
-            </span>
-            <span>
-              <span className="font-bold text-foreground">456</span> Followers
-            </span>
+            <Link href={`/profile/${user.username}/following`} className="hover:underline">
+              <span className="font-bold text-foreground">{followingList.length}</span> Following
+            </Link>
+             <Link href={`/profile/${user.username}/followers`} className="hover:underline">
+              <span className="font-bold text-foreground">{followers.length}</span> Followers
+            </Link>
           </div>
         </CardHeader>
       </Card>
 
-      <div>
-        <h2 className="mb-4 font-headline text-xl font-bold">Posts</h2>
-        <div className="flex flex-col gap-8">
-          {userPosts.length > 0 ? (
-            userPosts.map((post) => <PostCard key={post.id} post={post} />)
-          ) : (
-            <div className="text-center text-muted-foreground">
-              <p>@{user.username} hasn&apos;t posted anything yet.</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <Tabs defaultValue="posts" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="posts">Posts</TabsTrigger>
+          <TabsTrigger value="followers">Followers</TabsTrigger>
+          <TabsTrigger value="following">Following</TabsTrigger>
+        </TabsList>
+        <TabsContent value="posts">
+          <div className="mt-4 flex flex-col gap-8">
+            {userPosts.length > 0 ? (
+              userPosts.map((post) => <PostCard key={post.id} post={post} />)
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                <p>@{user.username} hasn&apos;t posted anything yet.</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="followers">
+          <Card>
+            <CardContent className="p-6">
+              <UserList users={followers} emptyMessage={`@${user.username} doesn't have any followers yet.`} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="following">
+          <Card>
+            <CardContent className="p-6">
+               <UserList users={followingList} emptyMessage={`@${user.username} isn't following anyone yet.`} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

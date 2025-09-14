@@ -31,7 +31,6 @@ export function UserNav() {
   };
   
   // The user object from useAuth() might be different from the `currentUser` mock data.
-  // We prioritize the auth user's info but fall back to mock data for display.
   // In a real app, you would fetch profile data based on the auth user's ID.
   const displayName = user?.displayName || currentUser.name;
   const displayUsername = user?.email?.split('@')[0] || currentUser.username;
@@ -60,18 +59,20 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href={`/profile/${currentUser.username}`}>
-              <UserIcon className="mr-2 h-4 w-4" />
+              <UserIcon />
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              <Settings />
+              <span>Settings</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut />
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

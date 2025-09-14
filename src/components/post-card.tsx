@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PostActions } from "@/components/post-actions";
 import type { Post } from "@/lib/definitions";
 import { getUser, getComments, getLikes, hasLiked, currentUser } from "@/lib/data";
+import { Separator } from "./ui/separator";
 
 export function PostCard({ post }: { post: Post }) {
   const user = getUser(post.userId);
@@ -51,12 +52,12 @@ export function PostCard({ post }: { post: Post }) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col items-start p-4">
+      <CardFooter className="flex flex-col items-start gap-2 p-4">
         <div className="flex w-full justify-between text-sm text-muted-foreground">
             <span>{totalLikes} Likes</span>
             <span>{comments.length} Comments</span>
         </div>
-        <div className="my-2 h-px w-full bg-border" />
+        <Separator />
         <PostActions postId={post.id} initialLiked={isLiked} />
       </CardFooter>
     </Card>
