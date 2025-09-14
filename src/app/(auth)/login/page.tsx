@@ -23,7 +23,7 @@ type LoginMode = "user" | "admin";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<LoginMode>("user");
-  const [email, setEmail] = useState("user@example.com");
+  const [email, setEmail] = useState("vishwa@vega.com");
   const [password, setPassword] = useState("password");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -33,13 +33,8 @@ export default function LoginPage() {
   const handleModeChange = (value: string) => {
     const newMode = value as LoginMode;
     setMode(newMode);
-    if (newMode === "admin") {
-      setEmail("admin@example.com");
-      setPassword("password");
-    } else {
-      setEmail("user@example.com");
-      setPassword("password");
-    }
+    setEmail("vishwa@vega.com");
+    setPassword("password");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -47,7 +42,7 @@ export default function LoginPage() {
     setLoading(true);
 
     if (mode === "admin") {
-      if (email === "admin@example.com" && password === "password") {
+      if (email === "vishwa@vega.com" && password === "password") {
         await new Promise((resolve) => setTimeout(resolve, 500));
         router.push("/admin/dashboard");
       } else {
@@ -63,7 +58,7 @@ export default function LoginPage() {
       if (login) {
         login({
           displayName: "Vishwa Lingam",
-          email: "user@example.com",
+          email: "vishwa@vega.com",
           photoURL: "https://picsum.photos/seed/user6/200/200",
         });
       }

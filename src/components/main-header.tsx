@@ -50,6 +50,11 @@ function SearchBar() {
         setQuery("");
         inputRef.current?.blur();
       }
+    } else if (suggestions.length > 0) {
+      // If there's a query and suggestions, go to the first one
+      router.push(`/profile/${suggestions[0].username}`);
+      setQuery("");
+      inputRef.current?.blur();
     }
   };
 
@@ -57,6 +62,7 @@ function SearchBar() {
     router.push(`/profile/${username}`);
     setQuery("");
     inputRef.current?.blur();
+    setIsPopoverOpen(false);
   };
 
   return (
@@ -71,7 +77,7 @@ function SearchBar() {
             <Input
               ref={inputRef}
               type="search"
-              placeholder="Search users... (@username)"
+              placeholder="Search users..."
               className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
