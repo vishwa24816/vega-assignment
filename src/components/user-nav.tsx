@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { LogOut, User as UserIcon, Settings } from "lucide-react";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
 
@@ -22,13 +19,7 @@ import {
 import { currentUser } from "@/lib/data"; // Will be replaced by dynamic data
 
 export function UserNav() {
-  const user = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push("/");
-  };
+  const { user, logout } = useAuth();
   
   // The user object from useAuth() might be different from the `currentUser` mock data.
   // In a real app, you would fetch profile data based on the auth user's ID.
@@ -41,8 +32,8 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={displayAvatar} alt={displayName} />
-            <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
+            <AvatarImage src={displayAvatar} alt={displayName || ''} />
+            <AvatarFallback>{displayName?.charAt(0)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -71,7 +62,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={logout}>
           <LogOut />
           <span>Log out</span>
         </DropdownMenuItem>
