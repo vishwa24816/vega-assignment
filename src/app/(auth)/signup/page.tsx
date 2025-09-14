@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -33,7 +32,9 @@ export default function SignupPage() {
     try {
       // In a real app, you'd also create a user document in Firestore here
       // with the name, username, etc.
-      await createUserWithEmailAndPassword(auth, email, password);
+      // await createUserWithEmailAndPassword(auth, email, password);
+      console.log('Simulating signup for:', { name, email });
+      await new Promise(resolve => setTimeout(resolve, 1000));
       router.push("/feed");
     } catch (error: any) {
       toast({
