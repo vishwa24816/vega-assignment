@@ -12,35 +12,41 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostActions } from '@/components/post-actions';
-import type { Post } from '@/lib/definitions';
+import type { Post, Comment } from '@/lib/definitions';
 import {
   getUser,
-  getComments,
   getLikes,
   hasLiked,
   currentUser,
 } from '@/lib/data';
 import { Separator } from './ui/separator';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CommentSection } from './comment-section';
 
 export function PostCard({
   post,
+  initialComments = [],
   initialShowComments = false,
 }: {
   post: Post;
+  initialComments?: Comment[];
   initialShowComments?: boolean;
 }) {
   const user = getUser(post.userId);
   if (!user) return null;
 
   const [showComments, setShowComments] = useState(initialShowComments);
-  const comments = getComments(post.id);
+  const [comments, setComments] = useState<Comment[]>(initialComments);
+
   const totalLikes = getLikes(post.id);
   const isLiked = hasLiked(post.id, currentUser.id);
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
   });
+
+  const handleCommentAdded = useCallback((newComment: Comment) => {
+    setComments((prevComments) => [newComment, ...prevComments]);
+  }, []);
 
   return (
     <Card>
@@ -89,7 +95,11 @@ export function PostCard({
         {showComments && (
           <>
             <Separator />
-            <CommentSection postId={post.id} comments={comments} />
+            <CommentSection
+              postId={post.id}
+              comments={comments}
+              onCommentAdded={handleCommentAdded}
+            />
           </>
         )}
       </CardFooter>

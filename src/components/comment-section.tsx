@@ -43,18 +43,21 @@ function CommentItem({ comment }: { comment: Comment }) {
   );
 }
 
-function AddCommentForm({ postId }: { postId: string }) {
+function AddCommentForm({
+  postId,
+  onCommentAdded,
+}: {
+  postId: string;
+  onCommentAdded: (comment: Comment) => void;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleAddComment = async (formData: FormData) => {
     const result = await addComment(postId, currentUser.id, formData);
-    if (result.success) {
+    if (result.success && result.comment) {
+      onCommentAdded(result.comment);
       formRef.current?.reset();
-       toast({
-        title: 'Comment posted!',
-        description: 'Your comment has been successfully added.',
-      });
     } else {
       toast({
         title: 'Error',
@@ -99,13 +102,15 @@ function AddCommentForm({ postId }: { postId: string }) {
 export function CommentSection({
   postId,
   comments,
+  onCommentAdded,
 }: {
   postId: string;
   comments: Comment[];
+  onCommentAdded: (comment: Comment) => void;
 }) {
   return (
     <div className="w-full space-y-4 pt-4">
-      <AddCommentForm postId={postId} />
+      <AddCommentForm postId={postId} onCommentAdded={onCommentAdded} />
       <div className="space-y-4">
         {comments
           .sort(

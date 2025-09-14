@@ -3,8 +3,7 @@
 
 import { posts, follows, likes, comments, users, notifications } from './data';
 import { revalidatePath } from 'next/cache';
-import type { Post } from './definitions';
-import { useToast } from '@/hooks/use-toast';
+import type { Post, Comment } from './definitions';
 
 // This is a mock implementation. In a real app, you would interact with a database.
 
@@ -121,7 +120,7 @@ export async function addComment(
   const content = formData.get('comment') as string;
   if (!content) return { success: false, message: 'Comment cannot be empty.' };
 
-  const newComment = {
+  const newComment: Comment = {
     id: `comment-${Date.now()}`,
     postId,
     userId,
@@ -129,28 +128,14 @@ export async function addComment(
     createdAt: new Date().toISOString(),
   };
   comments.push(newComment);
-  console.log(`User ${userId} commented on post ${postId}: "${content}"`);
 
-  // Simulate a notification
-  const vikramUser = users.find(u => u.username === 'vikram');
-  if (vikramUser) {
-    const newNotification = {
-      id: `notif-${Date.now()}`,
-      type: 'like' as const,
-      userId: vikramUser.id,
-      postId: postId,
-      createdAt: new Date().toISOString(),
-      read: false,
-    };
-    notifications.unshift(newNotification);
-    console.log(`Simulated notification: Vikram Singh liked your post.`);
-    revalidatePath('/notifications');
-  }
-
-
-  revalidatePath('/feed');
+  // This revalidation will update the page for other users or on a hard refresh.
+  // The optimistic update on the client provides the instant feedback.
   revalidatePath(`/post/${postId}`);
-  return { success: true, message: 'Comment added!' };
+  revalidatePath('/notifications');
+
+
+  return { success: true, comment: newComment };
 }
 
 export async function updateProfile(userId: string, formData: FormData) {
