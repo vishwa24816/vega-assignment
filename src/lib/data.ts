@@ -1,4 +1,4 @@
-import type { User, Post, Comment, Like, Follow } from "@/lib/definitions";
+import type { User, Post, Comment, Like, Follow, Notification } from "@/lib/definitions";
 import { subHours, subMinutes, subDays } from "date-fns";
 
 export const currentUser: User = {
@@ -145,6 +145,47 @@ export const follows: Follow[] = [
   { followerId: "user-2", followingId: "user-current" },
 ];
 
+export const notifications: Notification[] = [
+    {
+        id: "notif-1",
+        type: "like",
+        userId: "user-1",
+        postId: "post-4",
+        createdAt: subHours(new Date(), 1).toISOString(),
+        read: false,
+    },
+    {
+        id: "notif-2",
+        type: "comment",
+        userId: "user-2",
+        postId: "post-4",
+        createdAt: subHours(new Date(), 2).toISOString(),
+        read: false,
+    },
+    {
+        id: "notif-3",
+        type: "follow",
+        userId: "user-3",
+        createdAt: subHours(new Date(), 5).toISOString(),
+        read: true,
+    },
+     {
+        id: "notif-4",
+        type: "like",
+        userId: "user-4",
+        postId: "post-4",
+        createdAt: subDays(new Date(), 1).toISOString(),
+        read: true,
+    },
+     {
+        id: "notif-5",
+        type: "follow",
+        userId: "user-5",
+        createdAt: subDays(new Date(), 2).toISOString(),
+        read: true,
+    },
+];
+
 // Helper functions to get data
 export const getPost = (postId: string) => posts.find(p => p.id === postId);
 export const getUser = (userId: string) => users.find(u => u.id === userId);
@@ -166,3 +207,9 @@ export const getUsersToFollow = (userId: string) => {
     const followedUsers = getFollows(userId).map(f => f.followingId);
     return users.filter(u => u.id !== userId && !followedUsers.includes(u.id));
 }
+
+export const getNotifications = (userId: string) => {
+    // In a real app, you'd fetch notifications for the given userId.
+    // Here we return all mock notifications for demonstration.
+    return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+};

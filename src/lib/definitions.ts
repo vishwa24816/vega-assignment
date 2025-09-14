@@ -32,3 +32,12 @@ export type Follow = {
   followerId: string;
   followingId: string;
 };
+
+export type Notification = {
+  id: string;
+  type: "like" | "comment" | "follow";
+  userId: string; // ID of the user who triggered the notification
+  postId?: string; // ID of the relevant post, if any
+  createdAt: string;
+  read: boolean;
+};
