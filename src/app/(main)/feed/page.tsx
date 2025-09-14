@@ -1,29 +1,15 @@
 
-import { getFeedPosts, currentUser, getLikes, getComments } from "@/lib/data";
+import { getFeedPosts, currentUser } from "@/lib/data";
 import { CreatePostForm } from "@/components/create-post-form";
 import { PostCard } from "@/components/post-card";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { Post } from "@/lib/definitions";
 
-async function getScoredFeedPosts(): Promise<Post[]> {
+async function getSortedFeedPosts(): Promise<Post[]> {
   const initialPosts = getFeedPosts(currentUser.id);
 
-  // Non-AI scoring mimic: Sort by engagement (likes + comments)
-  // We'll give comments more weight than likes.
+  // Sort posts chronologically, newest first.
   const sortedPosts = [...initialPosts].sort((a, b) => {
-    const scoreA = getLikes(a.id) + getComments(a.id).length * 2;
-    const scoreB = getLikes(b.id) + getComments(b.id).length * 2;
-    
-    // If scores are equal, sort by creation date
-    if (scoreB === scoreA) {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    
-    return scoreB - scoreA;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return sortedPosts;
@@ -31,7 +17,7 @@ async function getScoredFeedPosts(): Promise<Post[]> {
 
 
 export default async function FeedPage() {
-  const posts = await getScoredFeedPosts();
+  const posts = await getSortedFeedPosts();
 
   return (
     <div className="flex flex-col gap-8">
