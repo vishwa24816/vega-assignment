@@ -22,58 +22,8 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { User } from '@/lib/definitions';
-import { useTransition } from 'react';
-import { toggleFollow } from '@/lib/actions';
-import { useToast } from '@/hooks/use-toast';
-
-function FollowButton({
-  isCurrentUserProfile,
-  isFollowing,
-  targetUserId,
-}: {
-  isCurrentUserProfile: boolean;
-  isFollowing: boolean;
-  targetUserId: string;
-}) {
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
-
-  const handleFollow = () => {
-    startTransition(async () => {
-      const result = await toggleFollow(
-        currentUser.id,
-        targetUserId,
-        isFollowing
-      );
-      if (!result.success) {
-        toast({
-          title: 'Error',
-          description: 'Could not update follow status.',
-          variant: 'destructive',
-        });
-      }
-    });
-  };
-
-  if (isCurrentUserProfile) {
-    return (
-      <Button variant="outline" asChild>
-        <Link href="/settings">Edit Profile</Link>
-      </Button>
-    );
-  }
-
-  return (
-    <Button
-      variant={isFollowing ? 'outline' : 'default'}
-      onClick={handleFollow}
-      disabled={isPending}
-    >
-      {isFollowing ? 'Following' : 'Follow'}
-    </Button>
-  );
-}
+import type { User } from '@/lib/definitions';
+import { FollowButton } from '@/components/follow-button';
 
 function UserList({
   users,
@@ -105,10 +55,9 @@ function UserList({
               </div>
             </div>
             {currentUser.id !== user.id && (
-              <FollowButton
-                isCurrentUserProfile={false}
-                isFollowing={isFollowing(currentUser.id, user.id)}
+               <FollowButton
                 targetUserId={user.id}
+                initialIsFollowing={isFollowing(currentUser.id, user.id)}
               />
             )}
           </div>
@@ -170,11 +119,16 @@ export default function ProfilePage({
               </CardTitle>
               <CardDescription>@{user.username}</CardDescription>
             </div>
-            <FollowButton
-              isCurrentUserProfile={isCurrentUserProfile}
-              isFollowing={followingStatus}
-              targetUserId={user.id}
-            />
+             {isCurrentUserProfile ? (
+              <Button variant="outline" asChild>
+                <Link href="/settings">Edit Profile</Link>
+              </Button>
+            ) : (
+              <FollowButton
+                targetUserId={user.id}
+                initialIsFollowing={followingStatus}
+              />
+            )}
           </div>
           <p className="pt-4 text-sm text-foreground">{user.bio}</p>
           <div className="flex gap-4 pt-2 text-sm text-muted-foreground">
