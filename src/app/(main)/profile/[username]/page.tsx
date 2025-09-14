@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import {
   users,
-  posts,
+  posts as allPosts,
   currentUser,
   isFollowing,
   getFollowers,
@@ -78,7 +78,10 @@ export default function ProfilePage({
     notFound();
   }
 
-  const userPosts = posts.filter((p) => p.userId === user.id);
+  const userPosts = allPosts
+    .filter((p) => p.userId === user.id)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   const isCurrentUserProfile = user.id === currentUser.id;
   const followingStatus = isFollowing(currentUser.id, user.id);
   const followers = getFollowers(user.id)
