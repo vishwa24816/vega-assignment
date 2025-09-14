@@ -48,6 +48,21 @@ export function PostCard({
     setComments((prevComments) => [newComment, ...prevComments]);
   }, []);
 
+  const handleCommentDeleted = useCallback((commentId: string) => {
+    setComments((prevComments) =>
+      prevComments.filter((c) => c.id !== commentId)
+    );
+  }, []);
+
+  const handleCommentUpdated = useCallback((updatedComment: Comment) => {
+    setComments((prevComments) =>
+      prevComments.map((c) =>
+        c.id === updatedComment.id ? updatedComment : c
+      )
+    );
+  }, []);
+
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-4 p-4">
@@ -99,6 +114,8 @@ export function PostCard({
               postId={post.id}
               comments={comments}
               onCommentAdded={handleCommentAdded}
+              onCommentDeleted={handleCommentDeleted}
+              onCommentUpdated={handleCommentUpdated}
             />
           </>
         )}

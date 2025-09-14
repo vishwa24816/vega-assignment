@@ -129,14 +129,37 @@ export async function addComment(
   };
   comments.push(newComment);
 
-  // This revalidation will update the page for other users or on a hard refresh.
-  // The optimistic update on the client provides the instant feedback.
   revalidatePath(`/post/${postId}`);
   revalidatePath('/notifications');
 
 
   return { success: true, comment: newComment };
 }
+
+export async function updateComment(commentId: string, newContent: string) {
+  if (!newContent) {
+    return { success: false, message: 'Comment cannot be empty.' };
+  }
+  const comment = comments.find((c) => c.id === commentId);
+  if (!comment) {
+    return { success: false, message: 'Comment not found.' };
+  }
+  comment.content = newContent;
+  revalidatePath(`/post/${comment.postId}`);
+  return { success: true, comment };
+}
+
+export async function deleteComment(commentId: string) {
+  const index = comments.findIndex((c) => c.id === commentId);
+  if (index === -1) {
+    return { success: false, message: 'Comment not found.' };
+  }
+  const comment = comments[index];
+  comments.splice(index, 1);
+  revalidatePath(`/post/${comment.postId}`);
+  return { success: true };
+}
+
 
 export async function updateProfile(userId: string, formData: FormData) {
   const name = formData.get('name') as string;
