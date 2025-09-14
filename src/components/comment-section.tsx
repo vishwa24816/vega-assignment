@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment } from '@/lib/definitions';
 import { currentUser, getUser } from '@/lib/data';
-import { Send, MoreHorizontal, Trash2, Edit, X, Loader2, Flag } from 'lucide-react';
+import { Send, MoreHorizontal, Trash2, Edit, Loader2, Flag } from 'lucide-react';
 import { addComment, deleteComment, updateComment, reportPost } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -83,6 +83,8 @@ function CommentItem({
 
   const handleReport = () => {
     startTransition(async () => {
+      // In a real app, you might want to report the comment itself, not just the post.
+      // For this prototype, we'll report the parent post.
       const result = await reportPost(comment.postId);
       if (result.success) {
         toast({

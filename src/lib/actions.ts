@@ -130,8 +130,6 @@ export async function addComment(
   comments.push(newComment);
 
   revalidatePath(`/post/${postId}`);
-  revalidatePath('/notifications');
-
 
   return { success: true, comment: newComment };
 }
