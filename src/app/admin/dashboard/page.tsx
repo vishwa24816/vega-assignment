@@ -9,9 +9,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Users, FileText, Trash2 } from "lucide-react";
+import { Users, FileText, Trash2, Activity } from "lucide-react";
 import { users, posts } from "@/lib/data";
-import { Separator } from "@/components/ui/separator";
 import {
   Accordion,
   AccordionContent,
@@ -19,10 +18,52 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from "next/image";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell } from "recharts";
+import { ChartConfig } from "@/components/ui/chart";
+
+const chartConfig = {
+  users: {
+    label: "Users",
+    color: "hsl(var(--chart-1))",
+  },
+  posts: {
+    label: "Posts",
+    color: "hsl(var(--chart-2))",
+  },
+  active: {
+    label: "Active Today",
+    color: "hsl(var(--chart-1))",
+  },
+  inactive: {
+    label: "Inactive",
+    color: "hsl(var(--muted))",
+  },
+} satisfies ChartConfig;
 
 export default function AdminDashboardPage() {
   const totalUsers = users.length;
   const totalPosts = posts.length;
+
+  // Mock data for "Active Today"
+  const activeToday = users.filter(user => 
+    posts.some(post => 
+      new Date(post.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000) && post.userId === user.id
+    )
+  ).length;
+
+  const chartData = [
+    { name: "Total", users: totalUsers, posts: totalPosts },
+  ];
+
+  const activityData = [
+    { name: 'active', value: activeToday, fill: 'var(--color-active)' },
+    { name: 'inactive', value: totalUsers - activeToday, fill: 'var(--color-inactive)' },
+  ];
 
   return (
     <div className="w-full max-w-6xl flex flex-col gap-8">
@@ -35,7 +76,7 @@ export default function AdminDashboardPage() {
         </CardHeader>
       </Card>
       
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -60,7 +101,67 @@ export default function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Today</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeToday}</div>
+            <p className="text-xs text-muted-foreground">
+              Users who posted in the last 24 hours.
+            </p>
+          </CardContent>
+        </Card>
       </div>
+
+       <Card>
+        <CardHeader>
+          <CardTitle>Basic Statistics</CardTitle>
+          <CardDescription>
+            A visual overview of platform metrics.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-8 md:grid-cols-2">
+          <div>
+            <h4 className="text-md mb-4 text-center font-semibold">Users vs Posts</h4>
+            <ChartContainer config={chartConfig} className="h-[200px] w-full">
+              <BarChart accessibilityLayer data={chartData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="users" fill="var(--color-users)" radius={4} />
+                <Bar dataKey="posts" fill="var(--color-posts)" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          </div>
+          <div>
+             <h4 className="text-md mb-4 text-center font-semibold">User Activity</h4>
+            <ChartContainer
+              config={chartConfig}
+              className="h-[200px] w-full"
+            >
+              <PieChart>
+                 <ChartTooltip
+                  content={<ChartTooltipContent nameKey="name" hideLabel />}
+                />
+                <Pie data={activityData} dataKey="value" nameKey="name" innerRadius={50}>
+                   {activityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
