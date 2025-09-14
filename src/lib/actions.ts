@@ -88,18 +88,18 @@ export async function addComment(
   console.log(`User ${userId} commented on post ${postId}: "${content}"`);
 
   // Simulate a notification
-  const davidUser = users.find(u => u.username === 'davidr');
-  if (davidUser) {
+  const vikramUser = users.find(u => u.username === 'vikram');
+  if (vikramUser) {
     const newNotification = {
       id: `notif-${Date.now()}`,
       type: 'like' as const,
-      userId: davidUser.id,
+      userId: vikramUser.id,
       postId: postId,
       createdAt: new Date().toISOString(),
       read: false,
     };
     notifications.unshift(newNotification);
-    console.log(`Simulated notification: David Rodriguez liked your post.`);
+    console.log(`Simulated notification: Vikram Singh liked your post.`);
     revalidatePath('/notifications');
   }
 
@@ -126,3 +126,5 @@ export async function updateProfile(userId: string, formData: FormData) {
   revalidatePath('/settings');
   return { success: true, message: 'Profile updated successfully!' };
 }
+
+    

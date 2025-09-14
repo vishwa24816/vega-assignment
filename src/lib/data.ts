@@ -15,37 +15,37 @@ export const users: User[] = [
   currentUser,
   {
     id: "user-1",
-    name: "Sarah Lee",
-    username: "sarahlee",
+    name: "Priya Sharma",
+    username: "priyasharma",
     avatarUrl: "https://picsum.photos/seed/user1/200/200",
     bio: "Photographer & adventurer. Capturing life one frame at a time.",
     bannerUrl: "https://picsum.photos/seed/banner1/1200/400",
   },
   {
     id: "user-2",
-    name: "Mike Johnson",
-    username: "mikej",
+    name: "Rohan Gupta",
+    username: "rohan",
     avatarUrl: "https://picsum.photos/seed/user2/200/200",
     bio: "Chef, foodie, and culinary explorer. Always looking for the next best meal.",
   },
   {
     id: "user-3",
-    name: "Emily Chen",
-    username: "emilyc",
+    name: "Anjali Mehta",
+    username: "anjali",
     avatarUrl: "https://picsum.photos/seed/user3/200/200",
     bio: "UX Designer with a passion for creating beautiful and intuitive digital experiences.",
   },
   {
     id: "user-4",
-    name: "David Rodriguez",
-    username: "davidr",
+    name: "Vikram Singh",
+    username: "vikram",
     avatarUrl: "https://picsum.photos/seed/user4/200/200",
     bio: "Fitness enthusiast and personal trainer. Helping others achieve their goals.",
   },
   {
     id: "user-5",
-    name: "Alex Kim",
-    username: "alexkim",
+    name: "Sneha Patel",
+    username: "sneha",
     avatarUrl: "https://picsum.photos/seed/user5/200/200",
     bio: "Musician and songwriter. Making sounds and telling stories.",
   },
@@ -201,7 +201,7 @@ export const comments: Comment[] = [
     id: "comment-2",
     postId: "post-1",
     userId: "user-3",
-    content: "Stunning shot, Sarah!",
+    content: "Stunning shot, Priya!",
     createdAt: subMinutes(new Date(), 85).toISOString(),
   },
   {
@@ -334,3 +334,5 @@ export const getNotifications = (userId: string) => {
     // Here we return all mock notifications for demonstration.
     return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
+
+    
