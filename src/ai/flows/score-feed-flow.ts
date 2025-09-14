@@ -29,7 +29,7 @@ const UserSchema = z.object({
   bannerUrl: z.string().optional(),
 });
 
-export const ScoreFeedInputSchema = z.object({
+const ScoreFeedInputSchema = z.object({
   user: UserSchema.describe('The user for whom the feed is being scored.'),
   posts: z
     .array(PostSchema)
@@ -49,7 +49,7 @@ const ScoredPostSchema = z.object({
     .describe('A brief explanation of why the post received its score.'),
 });
 
-export const ScoreFeedOutputSchema = z.object({
+const ScoreFeedOutputSchema = z.object({
   scoredPosts: z
     .array(ScoredPostSchema)
     .describe('The list of posts with their scores.'),
