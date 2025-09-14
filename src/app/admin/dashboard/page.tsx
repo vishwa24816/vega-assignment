@@ -111,7 +111,12 @@ export default function AdminDashboardPage() {
                                 {post.imageUrl && (
                                     <Image src={post.imageUrl} alt="Post image" width={80} height={80} className="rounded-md object-cover aspect-square"/>
                                 )}
-                                <p className="text-sm flex-1">{post.content}</p>
+                                <div className="flex-1">
+                                    <p className="text-sm">{post.content}</p>
+                                    {post.reported && (
+                                        <Badge variant="destructive" className="mt-2">Reported</Badge>
+                                    )}
+                                </div>
                             </div>
                             <Button variant="outline" size="sm">
                                 <Trash2 className="h-4 w-4"/>

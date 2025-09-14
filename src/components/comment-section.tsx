@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { Comment } from '@/lib/definitions';
 import { currentUser, getUser } from '@/lib/data';
-import { Send, MoreHorizontal, Trash2, Edit, X, Loader2 } from 'lucide-react';
-import { addComment, deleteComment, updateComment } from '@/lib/actions';
+import { Send, MoreHorizontal, Trash2, Edit, X, Loader2, Flag } from 'lucide-react';
+import { addComment, deleteComment, updateComment, reportPost } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -81,6 +81,24 @@ function CommentItem({
     });
   };
 
+  const handleReport = () => {
+    startTransition(async () => {
+      const result = await reportPost(comment.postId);
+      if (result.success) {
+        toast({
+          title: 'Reported',
+          description: 'Thank you for your feedback. An admin will review this post.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
   return (
     <div className="flex items-start gap-3">
       <Avatar className="h-8 w-8 border">
@@ -96,7 +114,7 @@ function CommentItem({
             >
               {user.name}
             </Link>
-            {isCurrentUserComment && !isEditing && (
+            {!isEditing && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -104,18 +122,27 @@ function CommentItem({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>Edit</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    className="text-destructive"
-                    disabled={isPending}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
+                  {isCurrentUserComment ? (
+                    <>
+                      <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Edit</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        className="text-destructive"
+                        disabled={isPending}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem onClick={handleReport} disabled={isPending}>
+                      <Flag className="mr-2 h-4 w-4" />
+                      <span>Report</span>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -177,6 +204,10 @@ function AddCommentForm({
       if (result.success && result.comment) {
         onCommentAdded(result.comment);
         formRef.current?.reset();
+        toast({
+          title: 'Success!',
+          description: 'Your comment has been posted.',
+        });
       } else {
         toast({
           title: 'Error',

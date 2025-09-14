@@ -14,6 +14,7 @@ export type Post = {
   content: string;
   imageUrl?: string;
   createdAt: string;
+  reported?: boolean;
 };
 
 export type Comment = {

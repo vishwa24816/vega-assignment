@@ -178,3 +178,14 @@ export async function updateProfile(userId: string, formData: FormData) {
   revalidatePath('/settings');
   return { success: true, message: 'Profile updated successfully!' };
 }
+
+export async function reportPost(postId: string) {
+  const post = posts.find((p) => p.id === postId);
+  if (!post) {
+    return { success: false, message: 'Post not found.' };
+  }
+  post.reported = true;
+  revalidatePath('/admin/dashboard');
+  revalidatePath(`/post/${postId}`);
+  return { success: true, message: 'Post has been reported.' };
+}
