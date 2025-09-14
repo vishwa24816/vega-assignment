@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/hooks/use-auth";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,8 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

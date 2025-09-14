@@ -1,12 +1,22 @@
+"use client";
+
 import { MainHeader } from "@/components/main-header";
 import { WhoToFollow } from "@/components/who-to-follow";
 import { getUsersToFollow, currentUser } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = useAuth();
+  // Don't render the main layout if the user is not authenticated and loading is finished.
+  // The AuthProvider will handle the redirection.
+  if (!user) {
+    return null;
+  }
+
   const usersToFollow = getUsersToFollow(currentUser.id);
 
   return (

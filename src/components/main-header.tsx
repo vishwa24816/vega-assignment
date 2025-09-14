@@ -1,11 +1,15 @@
+import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
 
 export function MainHeader() {
+  const user = useAuth();
+  
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="container mx-auto flex h-16 items-center justify-between">
@@ -21,7 +25,18 @@ export function MainHeader() {
               />
             </div>
           </form>
-          <UserNav />
+          {user ? (
+            <UserNav />
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Log In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
