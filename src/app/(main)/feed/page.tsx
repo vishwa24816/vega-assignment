@@ -6,10 +6,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { scoreFeed } from "@/ai/flows/score-feed-flow";
+import type { Post } from "@/lib/definitions";
+
+async function getScoredFeedPosts(): Promise<Post[]> {
+  const initialPosts = getFeedPosts(currentUser.id);
+  if (initialPosts.length === 0) {
+    return [];
+  }
+
+  const result = await scoreFeed({ user: currentUser, posts: initialPosts });
+
+  const scoredPostsMap = new Map(
+    result.scoredPosts.map((p) => [p.postId, p.score])
+  );
+
+  // Sort initialPosts based on the scores from the AI
+  const sortedPosts = [...initialPosts].sort((a, b) => {
+    const scoreA = scoredPostsMap.get(a.id) ?? 0;
+    const scoreB = scoredPostsMap.get(b.id) ?? 0;
+    return scoreB - scoreA;
+  });
+
+  return sortedPosts;
+}
 
 
-export default function FeedPage() {
-  const posts = getFeedPosts(currentUser.id);
+export default async function FeedPage() {
+  const posts = await getScoredFeedPosts();
 
   return (
     <div className="flex flex-col gap-8">
