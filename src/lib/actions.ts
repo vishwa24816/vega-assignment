@@ -87,6 +87,7 @@ export async function toggleLike(
 
   revalidatePath('/feed');
   revalidatePath('/profile/.*'); // Revalidate all profiles to update like counts
+  revalidatePath('/post/[postId]');
   return { success: true };
 }
 
