@@ -2,11 +2,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getFeedPosts, currentUser } from '@/lib/data';
+import { getFeedPosts, currentUser, getComments } from '@/lib/data';
 import { CreatePostForm } from '@/components/create-post-form';
 import { PostCard } from '@/components/post-card';
-import type { Post } from '@/lib/definitions';
+import type { Post, Comment } from '@/lib/definitions';
 import { Skeleton } from '@/components/ui/skeleton';
+
+type PostWithComments = Post & { comments: Comment[] };
 
 function FeedSkeleton() {
   return (
@@ -20,7 +22,7 @@ function FeedSkeleton() {
 }
 
 export default function FeedPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithComments[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +32,11 @@ export default function FeedPage() {
       // We simulate a network delay.
       await new Promise(resolve => setTimeout(resolve, 500));
       const feedPosts = getFeedPosts(currentUser.id);
-      setPosts(feedPosts);
+      const postsWithComments = feedPosts.map(post => ({
+        ...post,
+        comments: getComments(post.id),
+      }));
+      setPosts(postsWithComments);
       setLoading(false);
     }
 
@@ -38,7 +44,11 @@ export default function FeedPage() {
   }, []);
 
   const handlePostCreated = useCallback((newPost: Post) => {
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
+     const newPostWithComments: PostWithComments = {
+      ...newPost,
+      comments: getComments(newPost.id),
+    };
+    setPosts((prevPosts) => [newPostWithComments, ...prevPosts]);
   }, []);
 
   return (
@@ -49,7 +59,7 @@ export default function FeedPage() {
       ) : (
         <>
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} initialComments={post.comments} />
           ))}
           {posts.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
