@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRef, useTransition } from 'react';
@@ -6,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Image as ImageIcon, Loader2, Send } from 'lucide-react';
-import type { User } from '@/lib/definitions';
+import type { User, Post } from '@/lib/definitions';
 import { createPost } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
-export function CreatePostForm({ user }: { user: User }) {
+export function CreatePostForm({ user, onPostCreated }: { user: User, onPostCreated: (post: Post) => void }) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -19,7 +20,8 @@ export function CreatePostForm({ user }: { user: User }) {
   const handleCreatePost = (formData: FormData) => {
     startTransition(async () => {
       const result = await createPost(user.id, formData);
-      if (result.success) {
+      if (result.success && result.post) {
+        onPostCreated(result.post);
         formRef.current?.reset();
       } else {
         toast({

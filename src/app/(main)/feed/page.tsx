@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getFeedPosts, currentUser } from '@/lib/data';
 import { CreatePostForm } from '@/components/create-post-form';
 import { PostCard } from '@/components/post-card';
@@ -37,9 +37,13 @@ export default function FeedPage() {
     loadFeedPosts();
   }, []);
 
+  const handlePostCreated = useCallback((newPost: Post) => {
+    setPosts((prevPosts) => [newPost, ...prevPosts]);
+  }, []);
+
   return (
     <div className="flex flex-col gap-8">
-      <CreatePostForm user={currentUser} />
+      <CreatePostForm user={currentUser} onPostCreated={handlePostCreated} />
       {loading ? (
         <FeedSkeleton />
       ) : (

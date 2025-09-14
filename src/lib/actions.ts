@@ -23,7 +23,7 @@ export async function createPost(userId: string, formData: FormData) {
   console.log(`User ${userId} created post: "${content}"`);
   revalidatePath('/feed');
   revalidatePath(`/profile/${users.find((u) => u.id === userId)?.username}`);
-  return { success: true };
+  return { success: true, post: newPost };
 }
 
 export async function toggleLike(
@@ -105,7 +105,7 @@ export async function addComment(
 
 
   revalidatePath('/feed');
-  revalidatePath('/profile/.*');
+  revalidatePath('/post/[postId]');
   return { success: true, message: 'Comment added!' };
 }
 
@@ -126,5 +126,3 @@ export async function updateProfile(userId: string, formData: FormData) {
   revalidatePath('/settings');
   return { success: true, message: 'Profile updated successfully!' };
 }
-
-    
