@@ -6,20 +6,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Users, FileText } from "lucide-react";
+import { MoreVertical, Users, FileText, Trash2 } from "lucide-react";
 import { users, posts } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import Image from "next/image";
 
 export default function AdminDashboardPage() {
   const totalUsers = users.length;
@@ -67,48 +66,67 @@ export default function AdminDashboardPage() {
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
-            A list of all users in the system.
+            Click on a user to view their posts and take action.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-border">
-            <div className="grid grid-cols-12 items-center px-6 py-3 font-medium text-muted-foreground">
-                <div className="col-span-5">User</div>
-                <div className="col-span-3 hidden md:block">Status</div>
-                <div className="col-span-3 hidden md:block">Post Count</div>
-                <div className="col-span-1 text-right"></div>
-            </div>
-             {users.map((user) => (
-                <div key={user.id} className="grid grid-cols-12 items-center px-6 py-4 hover:bg-muted/50 transition-colors">
-                  <div className="col-span-5">
-                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 border">
-                        <AvatarImage src={user.avatarUrl} alt={user.name} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          @{user.username}
+          <Accordion type="single" collapsible className="w-full">
+            {users.map((user) => {
+              const userPosts = posts.filter(p => p.userId === user.id);
+              return (
+                <AccordionItem value={user.id} key={user.id}>
+                  <AccordionTrigger className="px-6 py-4 hover:bg-muted/50 transition-colors">
+                     <div className="flex w-full items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 border">
+                                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <div className="font-medium">{user.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                @{user.username}
+                                </div>
+                            </div>
                         </div>
-                      </div>
+                        <div className="flex items-center gap-6">
+                            <Badge variant="outline" className="hidden md:inline-flex">Active</Badge>
+                            <span className="text-sm text-muted-foreground hidden md:inline">{userPosts.length} posts</span>
+                        </div>
                     </div>
-                  </div>
-                  <div className="col-span-3 hidden md:block">
-                     <Badge variant="outline">Active</Badge>
-                  </div>
-                  <div className="col-span-3 hidden md:block">
-                     {posts.filter(p => p.userId === user.id).length}
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                     <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreVertical className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-          </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="bg-muted/20 p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-semibold">Posts by {user.name}</h4>
+                        <Button variant="destructive" size="sm">
+                            <Trash2 className="mr-2 h-4 w-4"/>
+                            Delete User
+                        </Button>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {userPosts.length > 0 ? (
+                        userPosts.map(post => (
+                          <div key={post.id} className="flex items-start justify-between gap-4 rounded-lg border bg-card p-4">
+                            <div className="flex items-start gap-4">
+                                {post.imageUrl && (
+                                    <Image src={post.imageUrl} alt="Post image" width={80} height={80} className="rounded-md object-cover aspect-square"/>
+                                )}
+                                <p className="text-sm flex-1">{post.content}</p>
+                            </div>
+                            <Button variant="outline" size="sm">
+                                <Trash2 className="h-4 w-4"/>
+                            </Button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">This user has no posts.</p>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            })}
+          </Accordion>
         </CardContent>
       </Card>
     </div>
