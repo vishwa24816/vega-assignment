@@ -69,7 +69,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const isAuthPage = pathname === "/login" || pathname === "/signup";
+    const isAuthPage =
+      pathname === '/login' ||
+      pathname === '/signup' ||
+      pathname === '/forgot-password';
     const isProtectedPage = !isAuthPage && pathname !== "/";
 
     if (!user && isProtectedPage) {
