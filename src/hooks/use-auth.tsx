@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
@@ -62,6 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (loading) return;
+
+    // Don't run auth logic for admin pages
+    if (pathname.startsWith("/admin")) {
+      return;
+    }
 
     const isAuthPage = pathname === "/login" || pathname === "/signup";
     const isProtectedPage = !isAuthPage && pathname !== "/";
