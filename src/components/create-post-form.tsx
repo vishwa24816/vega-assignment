@@ -12,9 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 
 export function CreatePostForm({ user }: { user: User }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleCreatePost = async (formData: FormData) => {
+    // In a real app, you would handle the file upload here.
+    // For now, the file input is part of the form, but we're not processing it.
     const result = await createPost(user.id, formData);
     if (result.success) {
       formRef.current?.reset();
@@ -25,6 +28,10 @@ export function CreatePostForm({ user }: { user: User }) {
         variant: "destructive",
       });
     }
+  };
+  
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -46,9 +53,10 @@ export function CreatePostForm({ user }: { user: User }) {
               className="mb-2 min-h-[60px] border-0 bg-transparent px-0 focus-visible:ring-0"
               required
             />
+            <input type="file" name="image" ref={fileInputRef} className="hidden" accept="image/*" />
             <div className="flex items-center justify-between">
               <div className="flex gap-2 text-muted-foreground">
-                <Button variant="ghost" size="icon" type="button">
+                <Button variant="ghost" size="icon" type="button" onClick={handleImageButtonClick}>
                   <ImageIcon className="h-5 w-5" />
                 </Button>
               </div>
