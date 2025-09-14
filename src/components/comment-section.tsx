@@ -53,7 +53,7 @@ function AddCommentForm({ postId }: { postId: string }) {
       formRef.current?.reset();
        toast({
         title: 'Comment posted!',
-        description: "We've also simulated a 'like' notification for you.",
+        description: 'Your comment has been successfully added.',
       });
     } else {
       toast({

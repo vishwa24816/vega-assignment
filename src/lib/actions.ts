@@ -87,7 +87,7 @@ export async function toggleLike(
 
   revalidatePath('/feed');
   revalidatePath('/profile/.*'); // Revalidate all profiles to update like counts
-  revalidatePath('/post/[postId]');
+  revalidatePath(`/post/${postId}`);
   return { success: true };
 }
 
@@ -149,7 +149,7 @@ export async function addComment(
 
 
   revalidatePath('/feed');
-  revalidatePath('/post/[postId]');
+  revalidatePath(`/post/${postId}`);
   return { success: true, message: 'Comment added!' };
 }
 
