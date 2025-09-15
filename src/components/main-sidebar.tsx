@@ -1,19 +1,20 @@
+
 import Link from "next/link";
-import { Home, User, Settings, Bell } from "lucide-react";
+import { Home, User as UserIcon, Settings, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { currentUser } from "@/lib/data";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import type { User } from "@/lib/definitions";
 
-const navItems = [
+export function MainSidebar({ currentUser }: { currentUser: User }) {
+  const pathname = usePathname();
+  
+  const navItems = [
     { href: "/feed", icon: Home, label: "Feed" },
-    { href: `/profile/${currentUser.username}`, icon: User, label: "Profile" },
+    { href: `/profile/${currentUser.username}`, icon: UserIcon, label: "Profile" },
     { href: "/notifications", icon: Bell, label: "Notifications" },
     { href: "/settings", icon: Settings, label: "Settings" },
 ];
-
-export function MainSidebar() {
-  const pathname = usePathname();
 
   return (
     <nav className="flex flex-col gap-2">

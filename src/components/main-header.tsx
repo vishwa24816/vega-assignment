@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -9,7 +10,7 @@ import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { users } from "@/lib/data";
+import { getAllUsers } from "@/lib/data";
 import type { User } from "@/lib/definitions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,8 +18,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Skeleton } from "./ui/skeleton";
 
-function SearchBar() {
+function SearchBar({ allUsers }: { allUsers: User[] }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -27,7 +29,7 @@ function SearchBar() {
 
   useEffect(() => {
     if (query) {
-      const filteredUsers = users.filter(
+      const filteredUsers = allUsers.filter(
         (user) =>
           user.name.toLowerCase().includes(query.toLowerCase()) ||
           user.username.toLowerCase().includes(query.toLowerCase())
@@ -38,13 +40,13 @@ function SearchBar() {
       setSuggestions([]);
       setIsPopoverOpen(false);
     }
-  }, [query]);
+  }, [query, allUsers]);
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (query.startsWith("@")) {
       const username = query.substring(1);
-      const user = users.find((u) => u.username === username);
+      const user = allUsers.find((u) => u.username === username);
       if (user) {
         router.push(`/profile/${username}`);
         setQuery("");
@@ -121,17 +123,28 @@ function SearchBar() {
   );
 }
 
-export function MainHeader() {
+export function MainHeader({ currentUser }: { currentUser: User | null }) {
   const { user } = useAuth();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAllUsers().then(users => {
+      setAllUsers(users);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="container mx-auto flex h-16 items-center justify-between">
         <Logo />
         <div className="flex flex-1 items-center justify-end gap-4">
-          <SearchBar />
-          {user ? (
-            <UserNav />
+          {loading ? <Skeleton className="h-9 w-[200px] lg:w-[300px]" /> : <SearchBar allUsers={allUsers} />}
+          {user && currentUser ? (
+            <UserNav currentUser={currentUser} />
+          ) : user ? (
+            <Skeleton className="h-9 w-9 rounded-full" />
           ) : (
             <div className="flex items-center gap-2">
               <Button variant="ghost" asChild>

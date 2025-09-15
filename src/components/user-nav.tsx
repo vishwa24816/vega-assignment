@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -16,15 +17,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { currentUser } from "@/lib/data"; // Will be replaced by dynamic data
+import type { User } from "@/lib/definitions";
 
-export function UserNav() {
+export function UserNav({ currentUser }: { currentUser: User }) {
   const { user, logout } = useAuth();
   
   // The user object from useAuth() might be different from the `currentUser` mock data.
   // In a real app, you would fetch profile data based on the auth user's ID.
   const displayName = user?.displayName || currentUser.name;
-  const displayUsername = user?.email?.split('@')[0] || currentUser.username;
+  const displayUsername = currentUser.username;
   const displayAvatar = user?.photoURL || currentUser.avatarUrl;
 
   return (

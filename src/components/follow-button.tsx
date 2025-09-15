@@ -4,18 +4,19 @@
 import { useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { toggleFollow } from '@/lib/actions';
-import { currentUser } from '@/lib/data';
 import { Button, ButtonProps } from '@/components/ui/button';
 
 type FollowButtonProps = {
   targetUserId: string;
   initialIsFollowing: boolean;
+  currentUserId: string;
   buttonProps?: ButtonProps;
 };
 
 export function FollowButton({
   targetUserId,
   initialIsFollowing,
+  currentUserId,
   buttonProps,
 }: FollowButtonProps) {
   const [isPending, startTransition] = useTransition();
@@ -25,7 +26,7 @@ export function FollowButton({
   const handleFollow = () => {
     startTransition(async () => {
       const result = await toggleFollow(
-        currentUser.id,
+        currentUserId,
         targetUserId,
         isFollowing
       );

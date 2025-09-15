@@ -12,16 +12,46 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostActions } from '@/components/post-actions';
-import type { Post, Comment } from '@/lib/definitions';
+import type { Post, Comment, User } from '@/lib/definitions';
 import {
   getUser,
   getLikes,
   hasLiked,
-  currentUser,
+  getCurrentUser,
 } from '@/lib/data';
 import { Separator } from './ui/separator';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CommentSection } from './comment-section';
+import { Skeleton } from './ui/skeleton';
+
+function PostCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center gap-4 p-4">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="grid gap-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </CardHeader>
+      <CardContent className="px-4 pb-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4 mt-2" />
+      </CardContent>
+      <CardFooter className="flex flex-col items-start gap-2 p-4">
+        <div className="flex w-full justify-between">
+           <Skeleton className="h-4 w-16" />
+           <Skeleton className="h-4 w-20" />
+        </div>
+        <Separator />
+        <div className="flex w-full justify-around">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
 
 export function PostCard({
   post,
@@ -32,17 +62,31 @@ export function PostCard({
   initialComments?: Comment[];
   initialShowComments?: boolean;
 }) {
-  const user = getUser(post.userId);
-  if (!user) return null;
-
+  const [user, setUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showComments, setShowComments] = useState(initialShowComments);
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const totalLikes = getLikes(post.id);
-  const isLiked = hasLiked(post.id, currentUser.id);
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
-    addSuffix: true,
-  });
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const [postUser, fetchedCurrentUser, likesCount, likedStatus] = await Promise.all([
+        getUser(post.userId),
+        getCurrentUser(),
+        getLikes(post.id),
+        getCurrentUser().then(cu => hasLiked(post.id, cu.id)),
+      ]);
+      setUser(postUser || null);
+      setCurrentUser(fetchedCurrentUser);
+      setTotalLikes(likesCount);
+      setIsLiked(likedStatus);
+      setLoading(false);
+    }
+    loadData();
+  }, [post.id, post.userId]);
 
   const handleCommentAdded = useCallback((newComment: Comment) => {
     setComments((prevComments) => [newComment, ...prevComments]);
@@ -62,6 +106,13 @@ export function PostCard({
     );
   }, []);
 
+  if (loading || !user || !currentUser) {
+    return <PostCardSkeleton />;
+  }
+
+  const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
+    addSuffix: true,
+  });
 
   return (
     <Card>

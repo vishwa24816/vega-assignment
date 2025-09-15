@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, FileText, Trash2, Activity } from "lucide-react";
-import { users, posts } from "@/lib/data";
+import { getAllUsers, getAllPosts } from "@/lib/data";
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Cell } from "recharts";
 import { ChartConfig } from "@/components/ui/chart";
+import { useEffect, useState } from "react";
+import type { User, Post } from "@/lib/definitions";
 
 const chartConfig = {
   users: {
@@ -48,6 +50,24 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function AdminDashboardPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const [fetchedUsers, fetchedPosts] = await Promise.all([
+        getAllUsers(),
+        getAllPosts(),
+      ]);
+      setUsers(fetchedUsers);
+      setPosts(fetchedPosts);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
   const totalUsers = users.length;
   const totalPosts = posts.length;
 
@@ -66,6 +86,10 @@ export default function AdminDashboardPage() {
     { name: 'active', value: activeToday, fill: 'var(--color-active)' },
     { name: 'inactive', value: totalUsers - activeToday, fill: 'var(--color-inactive)' },
   ];
+  
+  if (loading) {
+      return <div>Loading dashboard...</div>
+  }
 
   return (
     <div className="w-full max-w-6xl flex flex-col gap-8">

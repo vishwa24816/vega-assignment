@@ -3,19 +3,19 @@ import { getPost, getComments } from '@/lib/data';
 import { PostCard } from '@/components/post-card';
 import { notFound } from 'next/navigation';
 
-export default function PostPage({
+export default async function PostPage({
   params,
   searchParams,
 }: {
   params: { postId: string };
   searchParams: { comments?: string };
 }) {
-  const post = getPost(params.postId);
+  const post = await getPost(params.postId);
   if (!post) {
     notFound();
   }
 
-  const comments = getComments(post.id);
+  const comments = await getComments(post.id);
   const showComments = searchParams.comments === 'true';
 
   return (

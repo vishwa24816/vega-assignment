@@ -2,13 +2,13 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import type { Comment } from '@/lib/definitions';
-import { currentUser, getUser } from '@/lib/data';
+import type { Comment, User } from '@/lib/definitions';
+import { getCurrentUser, getUser } from '@/lib/data';
 import { Send, MoreHorizontal, Trash2, Edit, Loader2, Flag } from 'lucide-react';
 import { addComment, deleteComment, updateComment, reportPost } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -24,18 +24,24 @@ function CommentItem({
   comment,
   onCommentDeleted,
   onCommentUpdated,
+  currentUser,
 }: {
   comment: Comment;
   onCommentDeleted: (commentId: string) => void;
   onCommentUpdated: (updatedComment: Comment) => void;
+  currentUser: User | null;
 }) {
-  const user = getUser(comment.userId);
+  const [user, setUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  if (!user) return null;
+  useEffect(() => {
+    getUser(comment.userId).then(u => setUser(u || null));
+  }, [comment.userId]);
+
+  if (!user || !currentUser) return null;
   const isCurrentUserComment = comment.userId === currentUser.id;
 
   const handleDelete = () => {
@@ -192,13 +198,17 @@ function CommentItem({
 function AddCommentForm({
   postId,
   onCommentAdded,
+  currentUser,
 }: {
   postId: string;
   onCommentAdded: (comment: Comment) => void;
+  currentUser: User | null;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  
+  if (!currentUser) return null;
 
   const handleAddComment = (formData: FormData) => {
     startTransition(async () => {
@@ -271,9 +281,15 @@ export function CommentSection({
   onCommentDeleted: (commentId: string) => void;
   onCommentUpdated: (updatedComment: Comment) => void;
 }) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+      getCurrentUser().then(setCurrentUser);
+  }, []);
+
   return (
     <div className="w-full space-y-4 pt-4">
-      <AddCommentForm postId={postId} onCommentAdded={onCommentAdded} />
+      <AddCommentForm postId={postId} onCommentAdded={onCommentAdded} currentUser={currentUser} />
       {comments.length > 0 && <Separator />}
       <div className="space-y-4">
         {comments
@@ -287,6 +303,7 @@ export function CommentSection({
               comment={comment}
               onCommentDeleted={onCommentDeleted}
               onCommentUpdated={onCommentUpdated}
+              currentUser={currentUser}
             />
           ))}
         {comments.length === 0 && (

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import {
   Card,
   CardHeader,
@@ -14,16 +15,59 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { currentUser } from '@/lib/data';
+import { getCurrentUser } from '@/lib/data';
 import { updateProfile } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import type { User } from '@/lib/definitions';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function SettingsSkeleton() {
+    return (
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                </CardHeader>
+            </Card>
+            <Skeleton className="h-10 w-64" />
+             <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                 <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+                <Skeleton className="h-10 w-32" />
+              </CardContent>
+            </Card>
+        </div>
+    )
+}
 
 export default function SettingsPage() {
   const [isPending, startTransition] = useTransition();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    getCurrentUser().then(setCurrentUser);
+  }, [])
+
   const handleUpdateProfile = (formData: FormData) => {
+    if (!currentUser) return;
     startTransition(async () => {
       const result = await updateProfile(currentUser.id, formData);
       if (result.success) {
@@ -40,6 +84,11 @@ export default function SettingsPage() {
       }
     });
   };
+
+  if (!currentUser) {
+      return <SettingsSkeleton />
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <Card>
@@ -128,7 +177,7 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-lg font-medium">Email Address</h3>
                 <p className="text-sm text-muted-foreground">
-                  Your current email is you@example.com
+                  Your current email is {currentUser.email}
                 </p>
                 <Input
                   className="mt-2"

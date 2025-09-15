@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toggleLike } from '@/lib/actions';
-import { currentUser } from '@/lib/data';
+import { getCurrentUser } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import type { User } from '@/lib/definitions';
 
 export function PostActions({
   postId,
@@ -20,9 +21,15 @@ export function PostActions({
 }) {
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [isPending, startTransition] = useTransition();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    getCurrentUser().then(setCurrentUser);
+  }, []);
+
   const handleLike = () => {
+    if (!currentUser) return;
     startTransition(async () => {
       const result = await toggleLike(postId, currentUser.id, isLiked);
       if (result.success) {
@@ -44,7 +51,7 @@ export function PostActions({
         size="sm"
         className="flex-1 justify-center gap-2"
         onClick={handleLike}
-        disabled={isPending}
+        disabled={isPending || !currentUser}
       >
         <Heart
           className={cn(

@@ -1,6 +1,6 @@
+
 import Link from "next/link";
-import { getNotifications, getUser, getPost } from "@/lib/data";
-import { currentUser } from "@/lib/data";
+import { getNotifications, getUser, getCurrentUser } from "@/lib/data";
 import {
   Card,
   CardHeader,
@@ -11,67 +11,10 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, User as UserIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import type { Notification } from "@/lib/definitions";
 
-export default function NotificationsPage() {
-  const allNotifications = getNotifications(currentUser.id);
-  const newNotifications = allNotifications.filter((n) => !n.read);
-  const earlierNotifications = allNotifications.filter((n) => n.read);
-
-  return (
-    <div className="flex flex-col gap-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Notifications</CardTitle>
-          <CardDescription>
-            Here's what you've missed.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      
-      {newNotifications.length > 0 && (
-        <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold font-headline">New</h2>
-            <Card>
-                <CardContent className="p-0">
-                    <div className="divide-y">
-                        {newNotifications.map((notification, index) => (
-                           <NotificationItem key={notification.id} notification={notification} />
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      )}
-
-      {earlierNotifications.length > 0 && (
-         <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold font-headline">Earlier</h2>
-            <Card>
-                <CardContent className="p-0">
-                    <div className="divide-y">
-                        {earlierNotifications.map((notification, index) => (
-                            <NotificationItem key={notification.id} notification={notification} />
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      )}
-
-      {allNotifications.length === 0 && (
-        <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            You don't have any notifications yet.
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function NotificationItem({ notification }: { notification: import("@/lib/definitions").Notification }) {
-    const user = getUser(notification.userId);
+async function NotificationItem({ notification }: { notification: Notification }) {
+    const user = await getUser(notification.userId);
 
     if (!user) return null;
 
@@ -114,4 +57,63 @@ function NotificationItem({ notification }: { notification: import("@/lib/defini
             )}
         </Link>
     );
+}
+
+
+export default async function NotificationsPage() {
+  const currentUser = await getCurrentUser();
+  const allNotifications = await getNotifications(currentUser.id);
+  const newNotifications = allNotifications.filter((n) => !n.read);
+  const earlierNotifications = allNotifications.filter((n) => n.read);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-xl">Notifications</CardTitle>
+          <CardDescription>
+            Here's what you've missed.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+      
+      {newNotifications.length > 0 && (
+        <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold font-headline">New</h2>
+            <Card>
+                <CardContent className="p-0">
+                    <div className="divide-y">
+                        {newNotifications.map((notification) => (
+                           <NotificationItem key={notification.id} notification={notification} />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+
+      {earlierNotifications.length > 0 && (
+         <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold font-headline">Earlier</h2>
+            <Card>
+                <CardContent className="p-0">
+                    <div className="divide-y">
+                        {earlierNotifications.map((notification) => (
+                            <NotificationItem key={notification.id} notification={notification} />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+
+      {allNotifications.length === 0 && (
+        <Card>
+          <CardContent className="p-6 text-center text-muted-foreground">
+            You don't have any notifications yet.
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 }
