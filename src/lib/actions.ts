@@ -107,7 +107,7 @@ export async function toggleFollow(
   }
 
   // Revalidate all pages under /profile to ensure follower/following lists update
-  revalidatePath('/profile', 'page');
+  revalidatePath('/profile', 'layout');
   revalidatePath('/feed');
   return { success: true };
 }
