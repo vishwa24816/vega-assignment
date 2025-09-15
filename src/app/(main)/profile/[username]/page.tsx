@@ -8,6 +8,10 @@ import {
   getFollowers,
   getFollows,
   getAllUsers,
+  getUser,
+  getComments,
+  getLikes,
+  hasLiked
 } from '@/lib/data';
 import { PostCard } from '@/components/post-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,7 +26,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import type { User } from '@/lib/definitions';
+import type { User, Post } from '@/lib/definitions';
 import { FollowButton } from '@/components/follow-button';
 
 async function UserList({
@@ -78,6 +82,13 @@ async function UserList({
   );
 }
 
+type PostCardData = Post & { 
+  user: User;
+  initialComments: any[];
+  initialLikes: number;
+  initialIsLiked: boolean;
+};
+
 export default async function ProfilePage({
   params,
 }: {
@@ -94,9 +105,28 @@ export default async function ProfilePage({
     notFound();
   }
 
-  const userPosts = allPosts
+  const userPostsRaw = allPosts
     .filter((p) => p.userId === user.id)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const userPostsPromises = userPostsRaw.map(async (post) => {
+      const [postUser, comments, likesCount, isLiked] = await Promise.all([
+        getUser(post.userId),
+        getComments(post.id),
+        getLikes(post.id),
+        hasLiked(post.id, currentUser.id),
+      ]);
+      return {
+        ...post,
+        user: postUser!,
+        initialComments: comments,
+        initialLikes: likesCount,
+        initialIsLiked: isLiked,
+      };
+    });
+
+  const userPosts: PostCardData[] = await Promise.all(userPostsPromises);
+
 
   const isCurrentUserProfile = user.id === currentUser.id;
   const followingStatus = await isFollowing(currentUser.id, user.id);
@@ -175,7 +205,7 @@ export default async function ProfilePage({
         <TabsContent value="posts">
           <div className="mt-4 flex flex-col gap-8">
             {userPosts.length > 0 ? (
-              userPosts.map((post) => <PostCard key={post.id} post={post} />)
+              userPosts.map((post) => <PostCard key={post.id} post={post} user={post.user} initialComments={post.initialComments} initialIsLiked={post.initialIsLiked} initialLikes={post.initialLikes} />)
             ) : (
               <div className="py-12 text-center text-muted-foreground">
                 <p>@{user.username} hasn&apos;t posted anything yet.</p>

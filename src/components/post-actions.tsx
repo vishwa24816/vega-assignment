@@ -14,10 +14,12 @@ export function PostActions({
   postId,
   initialLiked,
   onCommentClick,
+  onLikeToggle,
 }: {
   postId: string;
   initialLiked: boolean;
   onCommentClick: () => void;
+  onLikeToggle: (isLiked: boolean) => void;
 }) {
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [isPending, startTransition] = useTransition();
@@ -27,14 +29,19 @@ export function PostActions({
   useEffect(() => {
     getCurrentUser().then(setCurrentUser);
   }, []);
+  
+  useEffect(() => {
+    setIsLiked(initialLiked);
+  }, [initialLiked]);
 
   const handleLike = () => {
     if (!currentUser) return;
     startTransition(async () => {
+      const newLikedState = !isLiked;
+      onLikeToggle(newLikedState); // Optimistically update UI
       const result = await toggleLike(postId, currentUser.id, isLiked);
-      if (result.success) {
-        setIsLiked(!isLiked);
-      } else {
+      if (!result.success) {
+        onLikeToggle(isLiked); // Revert on failure
         toast({
           title: 'Error',
           description: 'Could not update like status.',

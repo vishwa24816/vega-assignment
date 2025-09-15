@@ -2,13 +2,18 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getFeedPosts, getCurrentUser, getComments } from '@/lib/data';
+import { getFeedPosts, getCurrentUser, getComments, getUser, hasLiked, getLikes } from '@/lib/data';
 import { CreatePostForm } from '@/components/create-post-form';
 import { PostCard } from '@/components/post-card';
 import type { Post, Comment, User } from '@/lib/definitions';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type PostWithComments = Post & { comments: Comment[] };
+type PostCardData = Post & { 
+  user: User;
+  initialComments: Comment[];
+  initialLikes: number;
+  initialIsLiked: boolean;
+};
 
 function FeedSkeleton() {
   return (
@@ -22,9 +27,31 @@ function FeedSkeleton() {
 }
 
 export default function FeedPage() {
-  const [posts, setPosts] = useState<PostWithComments[]>([]);
+  const [posts, setPosts] = useState<PostCardData[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchPosts = useCallback(async (user: User) => {
+    const feedPosts = await getFeedPosts(user.id);
+    const postsWithDataPromises = feedPosts.map(async (post) => {
+      const [postUser, comments, likesCount, isLiked] = await Promise.all([
+        getUser(post.userId),
+        getComments(post.id),
+        getLikes(post.id),
+        hasLiked(post.id, user.id),
+      ]);
+      return {
+        ...post,
+        user: postUser!,
+        initialComments: comments,
+        initialLikes: likesCount,
+        initialIsLiked: isLiked,
+      };
+    });
+    const postsWithData = await Promise.all(postsWithDataPromises);
+    setPosts(postsWithData);
+  }, []);
+
 
   useEffect(() => {
     async function loadInitialData() {
@@ -33,27 +60,18 @@ export default function FeedPage() {
       setCurrentUser(user);
 
       if (user) {
-        const feedPosts = await getFeedPosts(user.id);
-        const postsWithCommentsPromises = feedPosts.map(async (post) => ({
-          ...post,
-          comments: await getComments(post.id),
-        }));
-        const postsWithComments = await Promise.all(postsWithCommentsPromises);
-        setPosts(postsWithComments);
+        await fetchPosts(user);
       }
       setLoading(false);
     }
 
     loadInitialData();
-  }, []);
+  }, [fetchPosts]);
 
   const handlePostCreated = useCallback(async (newPost: Post) => {
-     const newPostWithComments: PostWithComments = {
-      ...newPost,
-      comments: await getComments(newPost.id),
-    };
-    setPosts((prevPosts) => [newPostWithComments, ...prevPosts]);
-  }, []);
+     if (!currentUser) return;
+     await fetchPosts(currentUser);
+  }, [currentUser, fetchPosts]);
 
   if (loading || !currentUser) {
       return (
@@ -70,7 +88,14 @@ export default function FeedPage() {
       <CreatePostForm user={currentUser} onPostCreated={handlePostCreated} />
       <>
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} initialComments={post.comments} />
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            user={post.user}
+            initialComments={post.initialComments}
+            initialLikes={post.initialLikes}
+            initialIsLiked={post.initialIsLiked}
+           />
         ))}
         {posts.length === 0 && !loading && (
           <div className="py-12 text-center text-muted-foreground">

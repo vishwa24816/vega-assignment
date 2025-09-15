@@ -13,16 +13,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostActions } from '@/components/post-actions';
 import type { Post, Comment, User } from '@/lib/definitions';
-import {
-  getUser,
-  getLikes,
-  hasLiked,
-  getCurrentUser,
-} from '@/lib/data';
 import { Separator } from './ui/separator';
 import { useState, useCallback, useEffect } from 'react';
 import { CommentSection } from './comment-section';
 import { Skeleton } from './ui/skeleton';
+import { getCurrentUser } from '@/lib/data';
 
 function PostCardSkeleton() {
   return (
@@ -55,38 +50,40 @@ function PostCardSkeleton() {
 
 export function PostCard({
   post,
+  user,
   initialComments = [],
+  initialLikes,
+  initialIsLiked,
   initialShowComments = false,
 }: {
   post: Post;
+  user: User;
   initialComments?: Comment[];
+  initialLikes: number;
+  initialIsLiked: boolean;
   initialShowComments?: boolean;
 }) {
-  const [user, setUser] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showComments, setShowComments] = useState(initialShowComments);
   const [comments, setComments] = useState<Comment[]>(initialComments);
-  const [totalLikes, setTotalLikes] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
+  const [totalLikes, setTotalLikes] = useState(initialLikes);
+  const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
+    async function loadCurrentUser() {
       setLoading(true);
-      const [postUser, fetchedCurrentUser, likesCount, likedStatus] = await Promise.all([
-        getUser(post.userId),
-        getCurrentUser(),
-        getLikes(post.id),
-        getCurrentUser().then(cu => hasLiked(post.id, cu.id)),
-      ]);
-      setUser(postUser || null);
+      const fetchedCurrentUser = await getCurrentUser();
       setCurrentUser(fetchedCurrentUser);
-      setTotalLikes(likesCount);
-      setIsLiked(likedStatus);
+      // We trust the initial props for the rest of the data
+      setTotalLikes(initialLikes);
+      setIsLiked(initialIsLiked);
+      setComments(initialComments);
       setLoading(false);
     }
-    loadData();
-  }, [post.id, post.userId]);
+    loadCurrentUser();
+  }, [post.id, initialLikes, initialIsLiked, initialComments]);
+
 
   const handleCommentAdded = useCallback((newComment: Comment) => {
     setComments((prevComments) => [newComment, ...prevComments]);
@@ -105,6 +102,11 @@ export function PostCard({
       )
     );
   }, []);
+
+  const handleLikeToggle = (liked: boolean) => {
+    setIsLiked(liked);
+    setTotalLikes(prev => liked ? prev + 1 : prev - 1);
+  }
 
   if (loading || !user || !currentUser) {
     return <PostCardSkeleton />;
@@ -157,6 +159,7 @@ export function PostCard({
           postId={post.id}
           initialLiked={isLiked}
           onCommentClick={() => setShowComments(!showComments)}
+          onLikeToggle={handleLikeToggle}
         />
         {showComments && (
           <>

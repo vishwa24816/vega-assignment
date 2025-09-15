@@ -1,4 +1,6 @@
 
+'use server';
+
 import type { User, Post, Comment, Like, Follow, Notification } from "@/lib/definitions";
 import path from 'path';
 import fs from 'fs/promises';
